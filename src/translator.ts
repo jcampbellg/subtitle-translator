@@ -22,6 +22,8 @@ export async function translateText(text: string, targetLanguage: string): Promi
 
   load.start()
 
+  let tokens = 0
+
   // Translate each subtitle individually
   for (let i = 0; i < srtArray.length; i++) {
     const subtitle = srtArray[i]
@@ -30,7 +32,7 @@ export async function translateText(text: string, targetLanguage: string): Promi
     load.text = loadingText
 
     const completion = await openai.chat.completions.create({
-      model: 'o3-mini',
+      model: 'gpt-4.1-nano',
       messages: [
         { role: 'system', content: prompt },
         { role: 'user', content: subtitle.text }
@@ -39,10 +41,13 @@ export async function translateText(text: string, targetLanguage: string): Promi
 
     // Update the subtitle text with the translated version
     srtArray[i].text = completion.choices[0].message?.content || subtitle.text
+    tokens += completion.usage?.total_tokens || 0
   }
 
   load.stop()
   // Add a newline after all translations are complete
+  console.log('')
+  console.log(`Total tokens used: ${tokens}`)
   console.log('')
 
   // Convert the array back to SRT format

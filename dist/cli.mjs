@@ -26,20 +26,24 @@ async function translateText(text, targetLanguage) {
     "frames": ["\u280B", "\u2819", "\u2839", "\u2838", "\u283C", "\u2834", "\u2826", "\u2827", "\u2807", "\u280F"]
   });
   load.start();
+  let tokens = 0;
   for (let i = 0; i < srtArray.length; i++) {
     const subtitle = srtArray[i];
     const loadingText = `Translating line ${i + 1}/${srtArray.length}...`;
     load.text = loadingText;
     const completion = await openai.chat.completions.create({
-      model: "o3-mini",
+      model: "gpt-4.1-nano",
       messages: [
         { role: "system", content: prompt },
         { role: "user", content: subtitle.text }
       ]
     });
     srtArray[i].text = completion.choices[0].message?.content || subtitle.text;
+    tokens += completion.usage?.total_tokens || 0;
   }
   load.stop();
+  console.log("");
+  console.log(`Total tokens used: ${tokens}`);
   console.log("");
   return parser.toSrt(srtArray);
 }
